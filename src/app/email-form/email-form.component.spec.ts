@@ -62,7 +62,7 @@ describe('EmailFormComponent', () => {
   it('verify initial component member values - unit', () => {
     component.ngOnInit();
     expect( JSON.stringify(component.model)).toBe(
-      JSON.stringify(new Email("will.lee.sesame@gmail.com",["will.lee.sesame@gmail.com"],"","",[],[]))
+      JSON.stringify(new Email("",[],"","",[],[]))
     );
     expect( JSON.stringify(component.state)).toBe(
       JSON.stringify({
