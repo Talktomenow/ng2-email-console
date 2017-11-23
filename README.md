@@ -1,5 +1,14 @@
 # NotificationConsole
 
+This is an Angular 5 app, providing sending email functionality. It's talking to a GraphQL server.
+Client side validations plus server response toast.
+It's using bootstrap for CSS.
+
+## to do
+form validation should be improved by using framework, possibily with state management for better testability
+e2e test cases
+inject EmailService instead of hard-code embeded in the component, to improve testability
+
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 1.5.2.
 
 ## Development server
