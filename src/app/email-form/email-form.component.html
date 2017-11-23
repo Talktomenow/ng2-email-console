@@ -1,0 +1,82 @@
+<div class="container">
+    <h3>Send An Email</h3>
+    <div>
+      <div class="form-group">
+        <label for="from">From</label>
+        <input type="email" class="form-control" id="from"
+       required
+       [(ngModel)]="model.from" name="from">
+      </div>
+      <div class="error" *ngIf="!validEmailPattern.test(model.from)">
+             Please provide an email address
+      </div>
+      <div class="form-group form-inline">
+        <label for="to">To</label>
+       <tag-input [(ngModel)]="model.to"
+       [ngModelOptions]="{standalone: true}"
+       [validators]="[emailValidate]"
+       [modelAsStrings]="true"
+       secondaryPlaceholder="'Enter' to confirm email" placeholder="'Enter' to confirm email"
+       theme='bootstrap'
+        name="to"></tag-input>
+      </div>
+      <div class="error" *ngIf="model.to.length==0">
+             Must have at least one email address
+      </div>
+
+     <div class="form-group">
+        <button (click)="showCCs = !showCCs">CCs</button>
+         <tag-input *ngIf="showCCs" [(ngModel)]="model.cc"
+       [ngModelOptions]="{standalone: true}"
+       [validators]="[emailValidate]"
+       [modelAsStrings]="true"
+        secondaryPlaceholder="'Enter' to confirm email" placeholder="'Enter' to confirm email"
+        theme='bootstrap'
+        ></tag-input>
+      </div>
+
+      <div class="form-group">
+        <button (click)="showBCCs = !showBCCs">BCCs</button>
+       <tag-input *ngIf="showBCCs" [(ngModel)]="model.bcc"
+       [ngModelOptions]="{standalone: true}"
+       [validators]="[emailValidate]"
+       [modelAsStrings]="true"
+       secondaryPlaceholder="'Enter' to confirm email" placeholder="'Enter' to confirm email"
+       theme='bootstrap'
+        name="bcc"></tag-input>
+      </div>
+
+      <div class="form-group">
+        <label for="title">Title</label>
+        <input type="text" class="form-control" id="title" [(ngModel)]="model.title">
+      </div>
+
+      <div class="form-group">
+        <label for="title">Body</label>
+        <textarea type="text" class="form-control" id="body" [(ngModel)]="model.body"
+        rows="10" cols="30">
+          </textarea>
+      </div>
+
+      <div class="error" *ngIf="state.failedResult">
+            {{state.failedResult}}
+      </div>
+      <div class="success" *ngIf="state.okResult">
+            {{state.okResult}}
+      </div>
+    <button type="submit" style="width:-webkit-fill-available"
+      [disabled]="!validated() || state.submit=='submitting'"
+      class="btn btn-success"
+      (click)="onSubmit(model)">
+      {{state.submit=='submitting'?'Submitting...':'Submit'}}<spinner  [size]="10" *ngIf="this.state.submit=='submitting'" [tickness]="1" ></spinner>
+    </button>
+    <button type="reset" style="width:-webkit-fill-available"
+    [disabled]="state.submit=='submitting'"
+    class="btn btn-default"
+    (click)="onReset()">
+    Reset
+    </button>
+
+
+    </div>
+</div>
