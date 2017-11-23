@@ -137,7 +137,7 @@ var AppModule = (function () {
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return client; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_apollo_client__ = __webpack_require__("../../../../apollo-client/index.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_apollo_link_http__ = __webpack_require__("../../../../apollo-link-http/lib/index.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_apollo_link_http__ = __webpack_require__("../../../../apollo-link-http/lib/httpLink.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_apollo_cache_inmemory__ = __webpack_require__("../../../../apollo-cache-inmemory/lib/index.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__environments_environment__ = __webpack_require__("../../../../../src/environments/environment.ts");
 
@@ -247,7 +247,7 @@ var EmailFormComponent = (function () {
         this.emailService = new __WEBPACK_IMPORTED_MODULE_2__dao_email_service__["a" /* EmailService */]();
     }
     EmailFormComponent.prototype.ngOnInit = function () {
-        this.model = new __WEBPACK_IMPORTED_MODULE_1__model_email__["a" /* Email */]("will.lee.sesame@gmail.com", ["will.lee.sesame@gmail.com"], "", "", [], []);
+        this.model = new __WEBPACK_IMPORTED_MODULE_1__model_email__["a" /* Email */]("", [], "", "", [], []);
         this.state = {
             submit: null,
             failedResult: null,

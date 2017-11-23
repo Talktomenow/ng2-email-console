@@ -3247,10 +3247,6 @@ var createSignalIfSupported = function () {
     var signal = controller.signal;
     return { controller: controller, signal: signal };
 };
-var defaultHttpOptions = {
-    includeQuery: true,
-    includeExtensions: false,
-};
 var createHttpLink = function (_a) {
     if (_a === void 0) { _a = {}; }
     var uri = _a.uri, fetcher = _a.fetch, includeExtensions = _a.includeExtensions, requestOptions = __rest(_a, ["uri", "fetch", "includeExtensions"]);
@@ -3263,14 +3259,15 @@ var createHttpLink = function (_a) {
         uri = '/graphql';
     return new __WEBPACK_IMPORTED_MODULE_0_apollo_link__["a" /* ApolloLink */](function (operation) {
         return new __WEBPACK_IMPORTED_MODULE_0_apollo_link__["b" /* Observable */](function (observer) {
-            var _a = operation.getContext(), headers = _a.headers, credentials = _a.credentials, _b = _a.fetchOptions, fetchOptions = _b === void 0 ? {} : _b, contextURI = _a.uri, _c = _a.http, httpOptions = _c === void 0 ? {} : _c;
+            var _a = operation.getContext(), headers = _a.headers, credentials = _a.credentials, _b = _a.fetchOptions, fetchOptions = _b === void 0 ? {} : _b, contextURI = _a.uri;
             var operationName = operation.operationName, extensions = operation.extensions, variables = operation.variables, query = operation.query;
-            var http = __assign({}, defaultHttpOptions, httpOptions);
-            var body = { operationName: operationName, variables: variables };
-            if (includeExtensions || http.includeExtensions)
+            var body = {
+                operationName: operationName,
+                variables: variables,
+                query: Object(__WEBPACK_IMPORTED_MODULE_1_graphql_language_printer__["print"])(query),
+            };
+            if (includeExtensions)
                 body.extensions = extensions;
-            if (http.includeQuery)
-                body.query = Object(__WEBPACK_IMPORTED_MODULE_1_graphql_language_printer__["print"])(query);
             var serializedBody;
             try {
                 serializedBody = JSON.stringify(body);
@@ -3295,7 +3292,7 @@ var createHttpLink = function (_a) {
                 fetcherOptions.headers = __assign({}, fetcherOptions.headers, requestOptions.headers);
             if (headers)
                 fetcherOptions.headers = __assign({}, fetcherOptions.headers, headers);
-            var _d = createSignalIfSupported(), controller = _d.controller, signal = _d.signal;
+            var _c = createSignalIfSupported(), controller = _c.controller, signal = _c.signal;
             if (controller)
                 fetcherOptions.signal = signal;
             fetcher(contextURI || uri, fetcherOptions)
@@ -3324,23 +3321,17 @@ var createHttpLink = function (_a) {
 var HttpLink = (function (_super) {
     __extends(HttpLink, _super);
     function HttpLink(opts) {
-        return _super.call(this, createHttpLink(opts).request) || this;
+        var _this = _super.call(this) || this;
+        _this.requester = createHttpLink(opts).request;
+        return _this;
     }
+    HttpLink.prototype.request = function (op) {
+        return this.requester(op);
+    };
     return HttpLink;
 }(__WEBPACK_IMPORTED_MODULE_0_apollo_link__["a" /* ApolloLink */]));
 
 //# sourceMappingURL=httpLink.js.map
-
-/***/ }),
-
-/***/ "../../../../apollo-link-http/lib/index.js":
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__httpLink__ = __webpack_require__("../../../../apollo-link-http/lib/httpLink.js");
-/* harmony namespace reexport (by used) */ __webpack_require__.d(__webpack_exports__, "a", function() { return __WEBPACK_IMPORTED_MODULE_0__httpLink__["a"]; });
-
-//# sourceMappingURL=index.js.map
 
 /***/ }),
 
@@ -18979,7 +18970,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵAnimationGroupPlayer", function() { return AnimationGroupPlayer; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵPRE_STYLE", function() { return ɵPRE_STYLE; });
 /**
- * @license Angular v5.0.3
+ * @license Angular v5.0.2
  * (c) 2010-2017 Google, Inc. https://angular.io/
  * License: MIT
  */
@@ -20319,20 +20310,6 @@ var NoopAnimationPlayer = (function () {
      * @return {?}
      */
     function () { return 0; };
-    /* @internal */
-    /**
-     * @param {?} phaseName
-     * @return {?}
-     */
-    NoopAnimationPlayer.prototype.triggerCallback = /**
-     * @param {?} phaseName
-     * @return {?}
-     */
-    function (phaseName) {
-        var /** @type {?} */ methods = phaseName == 'start' ? this._onStartFns : this._onDoneFns;
-        methods.forEach(function (fn) { return fn(); });
-        methods.length = 0;
-    };
     return NoopAnimationPlayer;
 }());
 
@@ -20568,20 +20545,6 @@ var AnimationGroupPlayer = (function () {
             }
         });
     };
-    /* @internal */
-    /**
-     * @param {?} phaseName
-     * @return {?}
-     */
-    AnimationGroupPlayer.prototype.triggerCallback = /**
-     * @param {?} phaseName
-     * @return {?}
-     */
-    function (phaseName) {
-        var /** @type {?} */ methods = phaseName == 'start' ? this._onStartFns : this._onDoneFns;
-        methods.forEach(function (fn) { return fn(); });
-        methods.length = 0;
-    };
     return AnimationGroupPlayer;
 }());
 
@@ -20663,7 +20626,7 @@ var ɵPRE_STYLE = '!';
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_animations__ = __webpack_require__("../../../animations/esm5/animations.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_tslib__ = __webpack_require__("../../../../tslib/tslib.es6.js");
 /**
- * @license Angular v5.0.3
+ * @license Angular v5.0.2
  * (c) 2010-2017 Google, Inc. https://angular.io/
  * License: MIT
  */
@@ -21504,9 +21467,6 @@ var AnimationAstBuilderVisitor = (function () {
         var /** @type {?} */ depCount = context.depCount = 0;
         var /** @type {?} */ states = [];
         var /** @type {?} */ transitions = [];
-        if (metadata.name.charAt(0) == '@') {
-            context.errors.push('animation triggers cannot be prefixed with an `@` sign (e.g. trigger(\'@foo\', [...]))');
-        }
         metadata.definitions.forEach(function (def) {
             _this._resetContextStyleTimingState(context);
             if (def.type == 0 /* State */) {
@@ -25243,15 +25203,11 @@ var TransitionAnimationEngine = (function () {
             }
         }
         var /** @type {?} */ allPreviousPlayersMap = new Map();
-        // this map works to tell which element in the DOM tree is contained by
-        // which animation. Further down below this map will get populated once
-        // the players are built and in doing so it can efficiently figure out
-        // if a sub player is skipped due to a parent player having priority.
-        var /** @type {?} */ animationElementMap = new Map();
+        var /** @type {?} */ sortedParentElements = [];
         queuedInstructions.forEach(function (entry) {
             var /** @type {?} */ element = entry.element;
             if (subTimelines.has(element)) {
-                animationElementMap.set(element, element);
+                sortedParentElements.unshift(element);
                 _this._beforeAnimationBuild(entry.player.namespaceId, entry.instruction, allPreviousPlayersMap);
             }
         });
@@ -25291,7 +25247,6 @@ var TransitionAnimationEngine = (function () {
         });
         var /** @type {?} */ rootPlayers = [];
         var /** @type {?} */ subPlayers = [];
-        var /** @type {?} */ NO_PARENT_ANIMATION_ELEMENT_DETECTED = {};
         queuedInstructions.forEach(function (entry) {
             var element = entry.element, player = entry.player, instruction = entry.instruction;
             // this means that it was never consumed by a parent animation which
@@ -25302,37 +25257,27 @@ var TransitionAnimationEngine = (function () {
                     skippedPlayers.push(player);
                     return;
                 }
-                // this will flow up the DOM and query the map to figure out
-                // if a parent animation has priority over it. In the situation
-                // that a parent is detected then it will cancel the loop. If
-                // nothing is detected, or it takes a few hops to find a parent,
-                // then it will fill in the missing nodes and signal them as having
-                // a detected parent (or a NO_PARENT value via a special constant).
-                var /** @type {?} */ parentWithAnimation_1 = NO_PARENT_ANIMATION_ELEMENT_DETECTED;
-                if (animationElementMap.size > 1) {
-                    var /** @type {?} */ elm = element;
-                    var /** @type {?} */ parentsToAdd = [];
-                    while (elm = elm.parentNode) {
-                        var /** @type {?} */ detectedParent = animationElementMap.get(elm);
-                        if (detectedParent) {
-                            parentWithAnimation_1 = detectedParent;
-                            break;
-                        }
-                        parentsToAdd.push(elm);
-                    }
-                    parentsToAdd.forEach(function (parent) { return animationElementMap.set(parent, parentWithAnimation_1); });
-                }
                 var /** @type {?} */ innerPlayer = _this._buildAnimation(player.namespaceId, instruction, allPreviousPlayersMap, skippedPlayersMap, preStylesMap, postStylesMap);
                 player.setRealPlayer(innerPlayer);
-                if (parentWithAnimation_1 === NO_PARENT_ANIMATION_ELEMENT_DETECTED) {
-                    rootPlayers.push(player);
+                var /** @type {?} */ parentHasPriority = null;
+                for (var /** @type {?} */ i = 0; i < sortedParentElements.length; i++) {
+                    var /** @type {?} */ parent_2 = sortedParentElements[i];
+                    if (parent_2 === element)
+                        break;
+                    if (_this.driver.containsElement(parent_2, element)) {
+                        parentHasPriority = parent_2;
+                        break;
+                    }
                 }
-                else {
-                    var /** @type {?} */ parentPlayers = _this.playersByElement.get(parentWithAnimation_1);
+                if (parentHasPriority) {
+                    var /** @type {?} */ parentPlayers = _this.playersByElement.get(parentHasPriority);
                     if (parentPlayers && parentPlayers.length) {
                         player.parentPlayer = optimizeGroupPlayer(parentPlayers);
                     }
                     skippedPlayers.push(player);
+                }
+                else {
+                    rootPlayers.push(player);
                 }
             }
             else {
@@ -25362,7 +25307,7 @@ var TransitionAnimationEngine = (function () {
         // fire the start/done transition callback events
         skippedPlayers.forEach(function (player) {
             if (player.parentPlayer) {
-                player.syncPlayerEvents(player.parentPlayer);
+                player.parentPlayer.onDestroy(function () { return player.destroy(); });
             }
             else {
                 player.destroy();
@@ -25693,23 +25638,6 @@ var TransitionAnimationPlayer = (function () {
      */
     function () { return this._player; };
     /**
-     * @param {?} player
-     * @return {?}
-     */
-    TransitionAnimationPlayer.prototype.syncPlayerEvents = /**
-     * @param {?} player
-     * @return {?}
-     */
-    function (player) {
-        var _this = this;
-        var /** @type {?} */ p = /** @type {?} */ (this._player);
-        if (p.triggerCallback) {
-            player.onStart(function () { return p.triggerCallback('start'); });
-        }
-        player.onDone(function () { return _this.finish(); });
-        player.onDestroy(function () { return _this.destroy(); });
-    };
-    /**
      * @param {?} name
      * @param {?} callback
      * @return {?}
@@ -25851,21 +25779,6 @@ var TransitionAnimationPlayer = (function () {
         enumerable: true,
         configurable: true
     });
-    /* @internal */
-    /**
-     * @param {?} phaseName
-     * @return {?}
-     */
-    TransitionAnimationPlayer.prototype.triggerCallback = /**
-     * @param {?} phaseName
-     * @return {?}
-     */
-    function (phaseName) {
-        var /** @type {?} */ p = /** @type {?} */ (this._player);
-        if (p.triggerCallback) {
-            p.triggerCallback(phaseName);
-        }
-    };
     return TransitionAnimationPlayer;
 }());
 /**
@@ -26587,20 +26500,6 @@ var WebAnimationsPlayer = (function () {
         }
         this.currentSnapshot = styles;
     };
-    /* @internal */
-    /**
-     * @param {?} phaseName
-     * @return {?}
-     */
-    WebAnimationsPlayer.prototype.triggerCallback = /**
-     * @param {?} phaseName
-     * @return {?}
-     */
-    function (phaseName) {
-        var /** @type {?} */ methods = phaseName == 'start' ? this._onStartFns : this._onDoneFns;
-        methods.forEach(function (fn) { return fn(); });
-        methods.length = 0;
-    };
     return WebAnimationsPlayer;
 }());
 /**
@@ -26872,7 +26771,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("../../../core/esm5/core.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_tslib__ = __webpack_require__("../../../../tslib/tslib.es6.js");
 /**
- * @license Angular v5.0.3
+ * @license Angular v5.0.2
  * (c) 2010-2017 Google, Inc. https://angular.io/
  * License: MIT
  */
@@ -33318,7 +33217,7 @@ function isPlatformWorkerUi(platformId) {
 /**
  * \@stable
  */
-var VERSION = new __WEBPACK_IMPORTED_MODULE_0__angular_core__["Version"]('5.0.3');
+var VERSION = new __WEBPACK_IMPORTED_MODULE_0__angular_core__["Version"]('5.0.2');
 
 /**
  * @fileoverview added by tsickle
@@ -33593,7 +33492,7 @@ var VERSION = new __WEBPACK_IMPORTED_MODULE_0__angular_core__["Version"]('5.0.3'
 /* unused harmony export removeSummaryDuplicates */
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_tslib__ = __webpack_require__("../../../../tslib/tslib.es6.js");
 /**
- * @license Angular v5.0.3
+ * @license Angular v5.0.2
  * (c) 2010-2017 Google, Inc. https://angular.io/
  * License: MIT
  */
@@ -34213,7 +34112,7 @@ var Version = (function () {
 /**
  * \@stable
  */
-var VERSION = new Version('5.0.3');
+var VERSION = new Version('5.0.2');
 
 /**
  * @fileoverview added by tsickle
@@ -60171,28 +60070,6 @@ var TypeCheckCompiler = (function () {
     return TypeCheckCompiler;
 }());
 var DYNAMIC_VAR_NAME = '_any';
-var TypeCheckLocalResolver = (function () {
-    function TypeCheckLocalResolver() {
-    }
-    /**
-     * @param {?} name
-     * @return {?}
-     */
-    TypeCheckLocalResolver.prototype.getLocal = /**
-     * @param {?} name
-     * @return {?}
-     */
-    function (name) {
-        if (name === EventHandlerVars.event.name) {
-            // References to the event should not be type-checked.
-            // TODO(chuckj): determine a better type for the event.
-            return variable(DYNAMIC_VAR_NAME);
-        }
-        return null;
-    };
-    return TypeCheckLocalResolver;
-}());
-var defaultResolver = new TypeCheckLocalResolver();
 var ViewBuilder = (function () {
     function ViewBuilder(options, reflector, externalReferenceVars, parent, component, isHostComponent, embeddedViewIndex, pipes, viewBuilderFactory) {
         this.options = options;
@@ -60267,7 +60144,7 @@ var ViewBuilder = (function () {
         this.updates.forEach(function (expression) {
             var _a = _this.preprocessUpdateExpression(expression), sourceSpan = _a.sourceSpan, context = _a.context, value = _a.value;
             var /** @type {?} */ bindingId = "" + bindingCount++;
-            var /** @type {?} */ nameResolver = context === _this.component ? _this : defaultResolver;
+            var /** @type {?} */ nameResolver = context === _this.component ? _this : null;
             var _b = convertPropertyBinding(nameResolver, variable(_this.getOutputVar(context)), value, bindingId), stmts = _b.stmts, currValExpr = _b.currValExpr;
             stmts.push(new ExpressionStatement(currValExpr));
             viewStmts.push.apply(viewStmts, stmts.map(function (stmt) { return applySourceSpanToStatementIfNeeded(stmt, sourceSpan); }));
@@ -60275,7 +60152,7 @@ var ViewBuilder = (function () {
         this.actions.forEach(function (_a) {
             var sourceSpan = _a.sourceSpan, context = _a.context, value = _a.value;
             var /** @type {?} */ bindingId = "" + bindingCount++;
-            var /** @type {?} */ nameResolver = context === _this.component ? _this : defaultResolver;
+            var /** @type {?} */ nameResolver = context === _this.component ? _this : null;
             var stmts = convertActionBinding(nameResolver, variable(_this.getOutputVar(context)), value, bindingId).stmts;
             viewStmts.push.apply(viewStmts, stmts.map(function (stmt) { return applySourceSpanToStatementIfNeeded(stmt, sourceSpan); }));
         });
@@ -63053,7 +62930,7 @@ var AotCompiler = (function () {
             // These can be used by the type check block for components,
             // and they also cause TypeScript to include these files into the program too,
             // which will make them part of the analyzedFiles.
-            var /** @type {?} */ externalReferences = ngModuleMeta.transitiveModule.directives.map(function (d) { return d.reference; }).concat(ngModuleMeta.transitiveModule.pipes.map(function (d) { return d.reference; }), ngModuleMeta.importedModules.map(function (m) { return m.type.reference; }), ngModuleMeta.exportedModules.map(function (m) { return m.type.reference; }), _this._externalIdentifierReferences([Identifiers.TemplateRef, Identifiers.ElementRef]));
+            var /** @type {?} */ externalReferences = ngModuleMeta.transitiveModule.directives.map(function (d) { return d.reference; }).concat(ngModuleMeta.transitiveModule.pipes.map(function (d) { return d.reference; }), ngModuleMeta.importedModules.map(function (m) { return m.type.reference; }), ngModuleMeta.exportedModules.map(function (m) { return m.type.reference; }));
             var /** @type {?} */ externalReferenceVars = new Map();
             externalReferences.forEach(function (ref, typeIndex) {
                 if (_this._host.isSourceFile(ref.filePath)) {
@@ -63081,25 +62958,6 @@ var AotCompiler = (function () {
         if (outputCtx.statements.length === 0) {
             _createEmptyStub(outputCtx);
         }
-    };
-    /**
-     * @param {?} references
-     * @return {?}
-     */
-    AotCompiler.prototype._externalIdentifierReferences = /**
-     * @param {?} references
-     * @return {?}
-     */
-    function (references) {
-        var /** @type {?} */ result = [];
-        for (var _i = 0, references_1 = references; _i < references_1.length; _i++) {
-            var reference = references_1[_i];
-            var /** @type {?} */ token = createTokenForExternalReference(this._reflector, reference);
-            if (token.identifier) {
-                result.push(token.identifier.reference);
-            }
-        }
-        return result;
     };
     /**
      * @param {?} ctx
@@ -68210,7 +68068,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_rxjs_operator_share__ = __webpack_require__("../../../../rxjs/_esm5/operator/share.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_rxjs_Subject__ = __webpack_require__("../../../../rxjs/_esm5/Subject.js");
 /**
- * @license Angular v5.0.3
+ * @license Angular v5.0.2
  * (c) 2010-2017 Google, Inc. https://angular.io/
  * License: MIT
  */
@@ -68878,7 +68736,7 @@ var Version = (function () {
 /**
  * \@stable
  */
-var VERSION = new Version('5.0.3');
+var VERSION = new Version('5.0.2');
 
 /**
  * @fileoverview added by tsickle
@@ -84791,7 +84649,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_rxjs_operator_map__ = __webpack_require__("../../../../rxjs/_esm5/operator/map.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__angular_platform_browser__ = __webpack_require__("../../../platform-browser/esm5/platform-browser.js");
 /**
- * @license Angular v5.0.3
+ * @license Angular v5.0.2
  * (c) 2010-2017 Google, Inc. https://angular.io/
  * License: MIT
  */
@@ -87095,7 +86953,6 @@ function cleanUpControl(control, dir) {
 function setUpViewChangePipeline(control, dir) {
     /** @type {?} */ ((dir.valueAccessor)).registerOnChange(function (newValue) {
         control._pendingValue = newValue;
-        control._pendingChange = true;
         control._pendingDirty = true;
         if (control.updateOn === 'change')
             updateControl(control, dir);
@@ -87109,7 +86966,7 @@ function setUpViewChangePipeline(control, dir) {
 function setUpBlurPipeline(control, dir) {
     /** @type {?} */ ((dir.valueAccessor)).registerOnTouched(function () {
         control._pendingTouched = true;
-        if (control.updateOn === 'blur' && control._pendingChange)
+        if (control.updateOn === 'blur')
             updateControl(control, dir);
         if (control.updateOn !== 'submit')
             control.markAsTouched();
@@ -87125,7 +86982,6 @@ function updateControl(control, dir) {
     if (control._pendingDirty)
         control.markAsDirty();
     control.setValue(control._pendingValue, { emitModelToViewChange: false });
-    control._pendingChange = false;
 }
 /**
  * @param {?} control
@@ -87230,9 +87086,8 @@ function syncPendingControls(form, directives) {
     form._syncPendingControls();
     directives.forEach(function (dir) {
         var /** @type {?} */ control = /** @type {?} */ (dir.control);
-        if (control.updateOn === 'submit' && control._pendingChange) {
+        if (control.updateOn === 'submit') {
             dir.viewToModelUpdate(control._pendingValue);
-            control._pendingChange = false;
         }
     });
 }
@@ -88840,7 +88695,6 @@ var FormControl = (function (_super) {
         this.markAsPristine(options);
         this.markAsUntouched(options);
         this.setValue(this.value, options);
-        this._pendingChange = false;
     };
     /**
      * @internal
@@ -88951,14 +88805,12 @@ var FormControl = (function (_super) {
      */
     function () {
         if (this.updateOn === 'submit') {
+            this.setValue(this._pendingValue, { onlySelf: true, emitModelToViewChange: false });
             if (this._pendingDirty)
                 this.markAsDirty();
             if (this._pendingTouched)
                 this.markAsTouched();
-            if (this._pendingChange) {
-                this.setValue(this._pendingValue, { onlySelf: true, emitModelToViewChange: false });
-                return true;
-            }
+            return true;
         }
         return false;
     };
@@ -92741,7 +92593,7 @@ var FormBuilder = (function () {
 /**
  * \@stable
  */
-var VERSION = new __WEBPACK_IMPORTED_MODULE_1__angular_core__["Version"]('5.0.3');
+var VERSION = new __WEBPACK_IMPORTED_MODULE_1__angular_core__["Version"]('5.0.2');
 
 /**
  * @fileoverview added by tsickle
@@ -92953,7 +92805,7 @@ var ReactiveFormsModule = (function () {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__angular_platform_browser__ = __webpack_require__("../../../platform-browser/esm5/platform-browser.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_tslib__ = __webpack_require__("../../../../tslib/tslib.es6.js");
 /**
- * @license Angular v5.0.3
+ * @license Angular v5.0.2
  * (c) 2010-2017 Google, Inc. https://angular.io/
  * License: MIT
  */
@@ -93604,7 +93456,7 @@ var CachedResourceLoader = (function (_super) {
 /**
  * \@stable
  */
-var VERSION = new __WEBPACK_IMPORTED_MODULE_1__angular_core__["Version"]('5.0.3');
+var VERSION = new __WEBPACK_IMPORTED_MODULE_1__angular_core__["Version"]('5.0.2');
 
 /**
  * @fileoverview added by tsickle
@@ -93682,7 +93534,7 @@ var platformBrowserDynamic = Object(__WEBPACK_IMPORTED_MODULE_1__angular_core__[
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__angular_animations__ = __webpack_require__("../../../animations/esm5/animations.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__angular_animations_browser__ = __webpack_require__("../../../animations/esm5/browser.js");
 /**
- * @license Angular v5.0.3
+ * @license Angular v5.0.2
  * (c) 2010-2017 Google, Inc. https://angular.io/
  * License: MIT
  */
@@ -94674,7 +94526,7 @@ var NoopAnimationsModule = (function () {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_core__ = __webpack_require__("../../../core/esm5/core.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_tslib__ = __webpack_require__("../../../../tslib/tslib.es6.js");
 /**
- * @license Angular v5.0.3
+ * @license Angular v5.0.2
  * (c) 2010-2017 Google, Inc. https://angular.io/
  * License: MIT
  */
@@ -97819,9 +97671,6 @@ var FALSE = 'FALSE';
 var ANGULAR = 'ANGULAR';
 var NATIVE_ADD_LISTENER = 'addEventListener';
 var NATIVE_REMOVE_LISTENER = 'removeEventListener';
-// use the same symbol string which is used in zone.js
-var stopSymbol = '__zone_symbol__propagationStopped';
-var stopMethodSymbol = '__zone_symbol__stopImmediatePropagation';
 var blackListedEvents = (typeof Zone !== 'undefined') && (/** @type {?} */ (Zone))[__symbol__('BLACK_LISTED_EVENTS')];
 var blackListedMap;
 if (blackListedEvents) {
@@ -97862,11 +97711,6 @@ var globalListener = function (event) {
         // itself or others
         var /** @type {?} */ copiedTasks = taskDatas.slice();
         for (var /** @type {?} */ i = 0; i < copiedTasks.length; i++) {
-            // if other listener call event.stopImmediatePropagation
-            // just break
-            if ((/** @type {?} */ (event))[stopSymbol] === true) {
-                break;
-            }
             var /** @type {?} */ taskData = copiedTasks[i];
             if (taskData.zone !== Zone.current) {
                 // only use Zone.run when Zone.current not equals to stored zone
@@ -97883,35 +97727,8 @@ var DomEventsPlugin = (function (_super) {
     function DomEventsPlugin(doc, ngZone) {
         var _this = _super.call(this, doc) || this;
         _this.ngZone = ngZone;
-        _this.patchEvent();
         return _this;
     }
-    /**
-     * @return {?}
-     */
-    DomEventsPlugin.prototype.patchEvent = /**
-     * @return {?}
-     */
-    function () {
-        if (!Event || !Event.prototype) {
-            return;
-        }
-        if ((/** @type {?} */ (Event.prototype))[stopMethodSymbol]) {
-            // already patched by zone.js
-            return;
-        }
-        var /** @type {?} */ delegate = (/** @type {?} */ (Event.prototype))[stopMethodSymbol] =
-            Event.prototype.stopImmediatePropagation;
-        Event.prototype.stopImmediatePropagation = function () {
-            if (this) {
-                this[stopSymbol] = true;
-            }
-            // should call native delegate in case
-            // in some enviroment part of the application
-            // will not use the patched Event
-            delegate && delegate.apply(this, arguments);
-        };
-    };
     // This plugin should come last in the list of plugins, because it accepts all
     // events.
     /**
@@ -98015,27 +97832,16 @@ var DomEventsPlugin = (function (_super) {
             // just call native removeEventListener
             return target[NATIVE_REMOVE_LISTENER].apply(target, [eventName, callback, false]);
         }
-        // fix issue 20532, should be able to remove
-        // listener which was added inside of ngZone
-        var /** @type {?} */ found = false;
         for (var /** @type {?} */ i = 0; i < taskDatas.length; i++) {
             // remove listener from taskDatas if the callback equals
             if (taskDatas[i].handler === callback) {
-                found = true;
                 taskDatas.splice(i, 1);
                 break;
             }
         }
-        if (found) {
-            if (taskDatas.length === 0) {
-                // all listeners are removed, we can remove the globalListener from target
-                underlyingRemove.apply(target, [eventName, globalListener, false]);
-            }
-        }
-        else {
-            // not found in taskDatas, the callback may be added inside of ngZone
-            // use native remove listener to remove the calback
-            target[NATIVE_REMOVE_LISTENER].apply(target, [eventName, callback, false]);
+        if (taskDatas.length === 0) {
+            // all listeners are removed, we can remove the globalListener from target
+            underlyingRemove.apply(target, [eventName, globalListener, false]);
         }
     };
     DomEventsPlugin.decorators = [
@@ -99843,7 +99649,7 @@ var By = (function () {
 /**
  * \@stable
  */
-var VERSION = new __WEBPACK_IMPORTED_MODULE_1__angular_core__["Version"]('5.0.3');
+var VERSION = new __WEBPACK_IMPORTED_MODULE_1__angular_core__["Version"]('5.0.2');
 
 /**
  * @fileoverview added by tsickle
